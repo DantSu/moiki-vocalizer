@@ -32,6 +32,10 @@
   margin: 0;
 }
 
+.project-card .social-stats {
+  padding: 0 5px 0 5px;
+}
+
 .ui.pagination.menu a {
   outline: none;
 }

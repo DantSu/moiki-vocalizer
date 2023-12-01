@@ -4,6 +4,7 @@ import { reducer as toastr } from 'react-redux-toastr'
 import app from './app'
 import projects from './projects'
 import story from './story'
+import store from './store'
 import settings from 'core/reducers/settings'
 
 const createRootReducer = (history) => combineReducers({
@@ -12,6 +13,7 @@ const createRootReducer = (history) => combineReducers({
   app,
   projects,
   story,
+  store,
   settings
 })
 

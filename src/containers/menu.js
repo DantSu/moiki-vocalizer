@@ -32,6 +32,7 @@ const AppMenu = ({ story, activePath }) => {
   const entries = [
     {icon: 'home', uid: '/', htmlId: 'btHome'},
     {name: 'Projets', icon: 'th', uid: '/projects', htmlId: 'btStories'},
+    {name: 'Store', icon: 'shopping bag', uid: '/store', htmlId: 'btStore'},
   ]
   if (story) {
     entries.push({name: 'Histoire', icon: 'book', uid: '/story', htmlId: 'btStory'})

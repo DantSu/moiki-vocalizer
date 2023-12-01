@@ -10,6 +10,7 @@ import ReduxToastr from 'react-redux-toastr'
 import Home from './pages/home'
 import VocalizeStory from './pages/vocalize-story'
 import Projects from './pages/projects'
+import Store from './pages/store'
 
 const App = ({ isReady, showStartupScreen }) => (
   <Fragment>
@@ -19,6 +20,7 @@ const App = ({ isReady, showStartupScreen }) => (
           <Route exact path="/" component={ Home } />
           <Route path="/projects" component={ Projects } />
           <Route path="/story" component={ VocalizeStory } />
+          <Route path="/store" component={ Store } />
           <Redirect to="/" />
         </Switch>
       </Layout>
