@@ -1,6 +1,6 @@
 import React from 'react'
 import { version } from '../../package.json'
-import { HEADER_HEIGHT, FOOTER_HEIGHT } from '../constants'
+import { HEADER_HEIGHT } from '../constants'
 import AppMenu from 'containers/menu'
 import ScrollToTop from 'components/scroll-to-top'
 

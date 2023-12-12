@@ -10,7 +10,7 @@ const {migrate} = require('../utils/migrate')
 const {getOrCreatePath} = require('../utils/get-or-create-path')
 const {generateAssetFiles} = require('../utils/generate-asset-files')
 const {cleanContent} = require('../utils/clean-content')
-const {requestJson, requestData} = require('../../../src/libs/request')
+const {requestJson, requestData} = require('../utils/request')
 
 const
   requestHeaderMoiki = {

@@ -1,6 +1,6 @@
-import {request} from 'https'
+const {request} = require('https')
 
-export function requestData (url, header) {
+function requestData (url, header) {
   return new Promise((resolve, reject) => {
     const req = request(
       url,
@@ -47,7 +47,7 @@ export function requestData (url, header) {
   })
 }
 
-export function requestJson (url, header) {
+function requestJson (url, header) {
   return requestData(
     url,
     {
@@ -58,3 +58,5 @@ export function requestJson (url, header) {
   )
     .then(data => JSON.parse(data.toString('utf-8')))
 }
+
+module.exports = {requestData, requestJson}

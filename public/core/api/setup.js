@@ -1,6 +1,6 @@
-const { systemPreferences } = require('electron')
-const { ipcMain: ipc } = require('electron')
-const { FFMPEG_BIN_PATH } = require('../constants')
+const {systemPreferences} = require('electron')
+const {ipcMain: ipc} = require('electron')
+const {FFMPEG_BIN_PATH} = require('../constants')
 const ffbinaries = require('ffbinaries')
 const ffmpeg = require('./ffmpeg')
 const isDev = require('electron-is-dev')
@@ -8,15 +8,32 @@ const path = require('path')
 const fs = require('fs')
 
 const download = (event) => {
+  console.log('FFMPEG: Downloading binaries')
   try {
-    ffbinaries.downloadBinaries(['ffmpeg', 'ffprobe'], {quiet: !isDev, destination: FFMPEG_BIN_PATH, tickerFn: (tick) => {
-      event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-download-progress', tick.progress)
-    }}, () => {
-      ffmpeg.setBinariesPaths()
-      event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-ready', null)
-    })
+    ffbinaries.downloadFiles(
+      ['ffmpeg', 'ffprobe'],
+      {
+        quiet: !isDev,
+        destination: FFMPEG_BIN_PATH,
+        tickerFn: (tick) => {
+          console.log('FFMPEG: Downloading binary:'+ tick.binaryName + '(' + tick.progress + '%)')
+          event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-download-progress', tick.progress)
+        }
+      },
+      (error, data) => {
+        ffmpeg.setBinariesPaths()
+        if(error) {
+          console.error(error)
+          event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-ready', error)
+        } else {
+          console.log('FFMPEG: Binary downloaded')
+          event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-ready', null)
+        }
+      }
+    )
   } catch (e) {
     event.sender.send('IPC_REDUX_MESSAGE', 'ffmpeg-ready', e)
+    console.log('FFMPEG: Error downloading binary')
   }
 }
 
@@ -26,7 +43,7 @@ const enableMicrophone = (event) => {
     if (isAllowed) {
       event.sender.send('IPC_REDUX_MESSAGE', 'microphone-ready')
     } else {
-      event.sender.send('IPC_REDUX_MESSAGE', 'microphone-cancel')  
+      event.sender.send('IPC_REDUX_MESSAGE', 'microphone-cancel')
     }
   })
 }

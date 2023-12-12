@@ -1,5 +1,5 @@
 import { send as ipcSend } from 'redux-electron-ipc'
-import { all, fork, takeEvery, put, take, call, race } from 'redux-saga/effects'
+import { all, fork, takeEvery, put, take, call } from 'redux-saga/effects'
 import { types as storeTypes, messages as storeMessages } from 'core/reducers/store'
 import { push as navigateTo } from 'connected-react-router'
 import { requestJson } from '../../libs/request'

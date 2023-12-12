@@ -22,8 +22,11 @@ export function *setup() {
 }
 
 export function *ffmpegDownloadSaga() {
+  console.log('Downloading ffmpeg binaries...')
   yield put(appMessages.ffmpegProgress(0))
+  console.log('Downloading ffmpeg binaries after progress 0...')
   yield put(ipcSend('ffmpeg-download'))
+  console.log('Downloading ffmpeg binaries after ffmeg-download...')
   let isDone = false
   while (!isDone) {
     const {progress, done} = yield race({

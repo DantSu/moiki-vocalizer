@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { connect } from 'react-redux'
-import { Segment, Divider, Loader, Header, Button, Image } from 'semantic-ui-react'
+import { Divider, Header, Image } from 'semantic-ui-react'
 
 const Home = (props) => {
   return (
@@ -14,7 +14,6 @@ const Home = (props) => {
       <div style={{ paddingTop: 240 }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ margin: '5em auto', fontSize: '1.2em', lineHeight: '1.2em' }}><b>Moiki Vocalizer</b> : transformez vos histoires faites avec <a href="https://moiki.fr" target="_blank" rel="noopener noreferrer">Moiki</a> en audio !</p>
-          {/*<Button className="link-button" as='a' href="https://github.com/kaelhem/moiki-vocalizer" target="_blank" primary size="big" style={{ marginBottom: '2em' }}>Comment ça marche ?</Button>*/}
           <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', width: 500, margin: 'auto' }}>
             <Divider horizontal>en bref</Divider>
             <ul style={{ margin: '2em auto', marginTop: 0, fontSize: '1.2em', lineHeight: '1.2em', listStyleType: 'none', padding: 0 }}>
@@ -33,10 +32,10 @@ const Home = (props) => {
 }
 
 const mapStateToProps = (state) => ({
-  
+
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  
+
 })
 export default connect(mapStateToProps, mapDispatchToProps)(Home)

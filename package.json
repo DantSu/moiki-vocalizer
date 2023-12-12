@@ -10,8 +10,8 @@
   "homepage": "./",
   "main": "public/electron.js",
   "scripts": {
-    "start": "rescripts start",
-    "build": "rescripts build",
+    "start": "rescripts --openssl-legacy-provider start",
+    "build": "rescripts --openssl-legacy-provider build",
     "test": "rescripts test",
     "dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
     "postinstall": "electron-builder install-app-deps",
