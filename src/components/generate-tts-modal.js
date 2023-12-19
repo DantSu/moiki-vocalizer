@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import SpeechSynthesisRecorder from 'libs/speech-synthesis-recorder'
 import { Button, Modal, Select, Divider, Radio, Icon } from 'semantic-ui-react'
 import moment from 'moment'
+import MicrosoftTTS from '../libs/ms-tts'
 
 const GenerateTtsModal = (props) => {
   const {
@@ -14,7 +15,7 @@ const GenerateTtsModal = (props) => {
     onOpenOptions,
     stats
   } = props
-  
+
   const [voice, setVoice] = useState(defaultVoice)
   const [safeRec, setSafeRec] = useState(true)
 
@@ -23,13 +24,20 @@ const GenerateTtsModal = (props) => {
   }
 
   const testVoice = () => {
-    new SpeechSynthesisRecorder({
-      text: voice.testSentence || 'Je suis une voix de synthèse', 
-      utteranceOptions: {
-        ...voice.data,
-        volume: 2
-      }
-    }).start()
+    if(voice.data.type === 'synthesis') {
+      new SpeechSynthesisRecorder({
+        text: voice.testSentence || 'Je suis une voix de synthèse',
+        utteranceOptions: {
+          ...voice.data,
+          volume: 2
+        }
+      }).start()
+    } else {
+      new MicrosoftTTS({
+        text: voice.testSentence || 'Je suis une voix de synthèse',
+        utteranceOptions: voice.data
+      }).start()
+    }
   }
 
   const nodesWithoutSounds = stats.nodes.filter(x => !x.hasSound)
@@ -42,7 +50,7 @@ const GenerateTtsModal = (props) => {
     console.log('devrait durer: : ', moment.utc(duration).format('HH:mm:ss'))
   }
 
-  
+
 
   return (
     <Modal
@@ -85,7 +93,7 @@ const GenerateTtsModal = (props) => {
 			  </Button>
 			</Fragment>
           )}
-          
+
         </div>
       </Modal.Content>
       <Modal.Actions style={{ display: 'flex', justifyContent: 'flex-end' }}>

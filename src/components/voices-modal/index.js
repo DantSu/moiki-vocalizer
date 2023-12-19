@@ -6,6 +6,7 @@ import SpeechSynthesisRecorder from 'libs/speech-synthesis-recorder'
 import { Button, Modal, Divider, Icon } from 'semantic-ui-react'
 import { VoiceEditor } from './voice-editor'
 import { VoicesList } from './voices-list'
+import MicrosoftTTS from '../../libs/ms-tts'
 
 const VoicesModal = (props) => {
   const {
@@ -20,14 +21,21 @@ const VoicesModal = (props) => {
 
   const [currentVoice, setCurrentVoice] = useState(null)
 
-  const testVoice = (voiceSettings, sentence='Ceci est un test') => {
-    new SpeechSynthesisRecorder({
-      text: sentence, 
-      utteranceOptions: {
-        ...voiceSettings,
-        volume: 2
-      }
-    }).start()
+  const testVoice = (voiceSettings, sentence = 'Ceci est un test') => {
+    if (voiceSettings.type === 'synthesis') {
+      new SpeechSynthesisRecorder({
+        text: sentence,
+        utteranceOptions: {
+          ...voiceSettings,
+          volume: 2
+        }
+      }).start()
+    } else {
+      new MicrosoftTTS({
+        text: sentence,
+        utteranceOptions: voiceSettings
+      }).start()
+    }
   }
 
   const onDuplicateVoice = (voice) => {
@@ -41,47 +49,53 @@ const VoicesModal = (props) => {
       open={true}
       closeOnDimmerClick={false}
     >
-      <Modal.Header style={{ background: '#4c77ac', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Modal.Header style={{
+        background: '#4c77ac',
+        color: '#fff',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
         <span>Synthèse vocale</span>
-        { !currentVoice ? (
+        {!currentVoice ? (
           <Button onClick={() => setCurrentVoice({})}>
-            <Icon name='plus' /> Ajouter une voix...
+            <Icon name="plus"/> Ajouter une voix...
           </Button>
         ) : (
           <Button onClick={() => setCurrentVoice(null)}>
-            <Icon name='arrow left' /> Retour
+            <Icon name="arrow left"/> Retour
           </Button>
         )}
       </Modal.Header>
       <Modal.Content>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
           <div>
             <p>Ajoutez différentes configurations de voix utilisées pour la synthèse vocale</p>
           </div>
-          <Divider />
-          { currentVoice ? (
+          <Divider/>
+          {currentVoice ? (
             <VoiceEditor
               currentVoice={currentVoice}
-              voiceActions={{ addVoice, updateVoice }}
+              voiceActions={{addVoice, updateVoice}}
               testVoice={testVoice}
               onEnd={() => setCurrentVoice(null)}
             />
           ) : (
             <VoicesList
               voices={configVoicesList}
-              voiceActions={{ removeVoice, setDefaultVoice, testVoice }}
+              voiceActions={{removeVoice, setDefaultVoice, testVoice}}
               onEditVoice={setCurrentVoice}
               onDuplicateVoice={onDuplicateVoice}
               defaultVoice={defaultVoice}
             />
-          )}          
+          )}
         </div>
       </Modal.Content>
       <Modal.Actions>
         <Button
-          id='modal-cancel-button'
-          onClick={ onClose }
-          disabled={ false }
+          id="modal-cancel-button"
+          onClick={onClose}
+          disabled={false}
         >Fermer</Button>
       </Modal.Actions>
     </Modal>

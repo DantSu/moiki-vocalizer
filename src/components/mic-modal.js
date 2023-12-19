@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { ipcRenderer as ipc } from 'electron'
 import { ReactMic } from '@matuschek/react-mic'
 import SpeechSynthesisRecorder from 'libs/speech-synthesis-recorder'
+import MicrosoftTTS from '../libs/ms-tts'
 import { AudioPlayerProvider } from 'react-use-audio-player'
 import AudioPlayer from 'components/audio-player'
 import { Button, Modal, Label, Image, Header, List, Popup, Icon } from 'semantic-ui-react'
@@ -101,17 +102,17 @@ const MicModal = (props) => {
     }
   }, [automaticVocalization, sequence])
 
-  const onStop = (blob, blobURL=null, origin) => {
+  const onStop = (blob, blobURL = null, origin) => {
     console.log('stop from:', origin, isSpeechSynthesis, sequence, currentSequence)
     setIsRecording(false)
     if ((isSpeechSynthesis && origin === 'recordSpeech') || (!isSpeechSynthesis && origin !== 'recordSpeech') || isVocal) {
       console.log('-> will convert')
       setIsConverting(true)
       setBlobSoundURI(blobURL || URL.createObjectURL(blob))
-      
+
       onSequenceUpdated && onSequenceUpdated(currentSequence || sequence, blob)
-      
-      const { folderName } = story.projectInfo
+
+      const {folderName} = story.projectInfo
       const fileName = (currentSequence || sequence).id
       //const ab = await blob.arrayBuffer()
       blob.arrayBuffer().then(ab => {
@@ -128,8 +129,8 @@ const MicModal = (props) => {
     isSpeechSynthesis = true
     setIsRecording(true)
     const defaultUtteranceOptions = {
-      voice: "Thomas", // "Amelie",
-      lang: "fr-FR", // "fr-CA",
+      voice: 'Thomas', // "Amelie",
+      lang: 'fr-FR', // "fr-CA",
       pitch: 1, // 0.8
       rate: 1, // 1.05
       volume: 2
@@ -138,10 +139,16 @@ const MicModal = (props) => {
       ...defaultUtteranceOptions,
       ...(speechSettings || defaultVoice).data
     } : defaultUtteranceOptions
-    const speechRecorder = new SpeechSynthesisRecorder({
-      text: sequence.content, 
-      utteranceOptions: opts
-    })
+    const speechRecorder = opts.type === 'synthesis' ?
+      new SpeechSynthesisRecorder({
+        text: sequence.content,
+        utteranceOptions: opts
+      }) :
+      new MicrosoftTTS({
+        text: sequence.content,
+        utteranceOptions: opts
+      })
+
     setCurrentSpeechRecorder(speechRecorder)
     speechRecorder.start().then(async (tts) => {
       if (tts.cancelled) {
@@ -198,29 +205,36 @@ const MicModal = (props) => {
           }
         }}
       />
-      <Modal.Header style={{ background: '#4c77ac', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', width: 320 }}>
-          <Label style={{ marginRight: 10 }} content={<span style={{ fontSize: '1.5em' }}>{ sequence.id }</span>} />
+      <Modal.Header style={{
+        background: '#4c77ac',
+        color: '#fff',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{display: 'flex', alignItems: 'center', width: 320}}>
+          <Label style={{marginRight: 10}} content={<span style={{fontSize: '1.5em'}}>{sequence.id}</span>}/>
         </div>
-        <div style={{ flexGrow: 1, display: 'flex' }}>
-          <div style={{ textAlign: 'center', lineHeight: '20px' }}>
+        <div style={{flexGrow: 1, display: 'flex'}}>
+          <div style={{textAlign: 'center', lineHeight: '20px'}}>
             Vocalisation de séquence
             <div>{currentIndex + 1} / {story.nodes.length}</div>
           </div>
         </div>
         <div>
-          <Button disabled={!hasPrevious || isRecording || isConverting} icon="arrow left" onClick={onLoadPreviousSequence} />
-          <Button disabled={!hasNext || isRecording || isConverting} icon="arrow right" onClick={onLoadNextSequence} />
+          <Button disabled={!hasPrevious || isRecording || isConverting} icon="arrow left"
+                  onClick={onLoadPreviousSequence}/>
+          <Button disabled={!hasNext || isRecording || isConverting} icon="arrow right" onClick={onLoadNextSequence}/>
         </div>
       </Modal.Header>
       <Modal.Content>
-        <div style={{ display: 'flex' }}>
-          <div style={{ width: '95%', display: 'flex' }}>
+        <div style={{display: 'flex'}}>
+          <div style={{width: '95%', display: 'flex'}}>
             <div className="sequence-content">
-              { sequence.content }
+              {sequence.content}
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{display: 'flex', flexDirection: 'column'}}>
             <ReactMic
               record={isRecording}
               className="sound-wave"
@@ -232,9 +246,9 @@ const MicModal = (props) => {
               width={300}
               height={140}
             />
-            { !automaticVocalization && (
-              <div style={{ display: 'flex', marginTop: 15 }}>
-                { blobSoundURI && (
+            {!automaticVocalization && (
+              <div style={{display: 'flex', marginTop: 15}}>
+                {blobSoundURI && (
                   <AudioPlayerProvider>
                     <AudioPlayer
                       file={blobSoundURI}
@@ -246,35 +260,45 @@ const MicModal = (props) => {
                 )}
                 {
                   (speechSettings || defaultVoice) && (
-                    <Button.Group style={{ margin: 2 }}>
+                    <Button.Group style={{margin: 2}}>
                       <Popup
-                        on='click'
+                        on="click"
                         open={isOpenVoiceList}
                         onOpen={() => setIsOpenVoiceList(true)}
                         onClose={() => setIsOpenVoiceList(false)}
-                        trigger={ <Button color='grey' style={{ width: 108, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', padding: 3 }}>{(speechSettings || defaultVoice).label}</Button> }
+                        trigger={<Button color="grey" style={{
+                          width: 108,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          padding: 3
+                        }}>{(speechSettings || defaultVoice).label}</Button>}
                       >
                         <div style={{width: 180}}>
-                          <Header content={ `Voix de synthèse (${configVoicesList.length})`} />
-                          <List divided selection verticalAlign='middle'  style={{ minHeight: 50, maxHeight: 200, overflowY: 'auto' }}>
+                          <Header content={`Voix de synthèse (${configVoicesList.length})`}/>
+                          <List divided selection verticalAlign="middle"
+                                style={{minHeight: 50, maxHeight: 200, overflowY: 'auto'}}>
                             {configVoicesList.map(voice => (
-                              <List.Item key={'voice-' + voice.id} onClick={() => onSelectVoice(voice)} style={{ fontWeight: voice.id === (speechSettings || defaultVoice).id ? 'bold' : 'normal' }}>
-                                { voice.label }
+                              <List.Item key={'voice-' + voice.id} onClick={() => onSelectVoice(voice)}
+                                         style={{fontWeight: voice.id === (speechSettings || defaultVoice).id ? 'bold' : 'normal'}}>
+                                {voice.label}
                               </List.Item>
                             ))}
                           </List>
                         </div>
                       </Popup>
-                      <Button style={{ paddingRight: '1.2em' }} onClick={() => recordSpeech()}>
-                        <Image src='assets/robot.svg' style={{width: 30}} />
+                      <Button style={{paddingRight: '1.2em'}} onClick={() => recordSpeech()}>
+                        <Image src="assets/robot.svg" style={{width: 30}}/>
                       </Button>
                     </Button.Group>
                   )
                 }
-                <Button style={{ margin: 2 }} disabled={isRecording || isConverting || isPlaying} positive onClick={() => onVocalStart()}>Start</Button>
+                <Button style={{margin: 2}} disabled={isRecording || isConverting || isPlaying} positive
+                        onClick={() => onVocalStart()}>Start</Button>
               </div>
             )}
-            <Button style={{ margin: 2 }} disabled={!isRecording || isConverting || isPlaying} negative onClick={() => isSpeechSynthesis ? stopSpeech() : setIsRecording(false)}>Stop</Button>
+            <Button style={{margin: 2}} disabled={!isRecording || isConverting || isPlaying} negative
+                    onClick={() => isSpeechSynthesis ? stopSpeech() : setIsRecording(false)}>Stop</Button>
           </div>
           {/*
           <div>
@@ -287,17 +311,17 @@ const MicModal = (props) => {
         </div>
       </Modal.Content>
       <Modal.Actions>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ fontStyle: 'italic', textAlign: 'left' }}>
-            <div style={{ fontWeight: 'bold' }}>Raccourcis clavier :&nbsp;</div>
-            <Label size='tiny'><Icon fitted name='arrow left' /></Label> Précédent,{' '}
-            <Label size='tiny'><Icon fitted name='arrow right' /></Label> Suivant,{' '}
-            <Label size='tiny'>Espace</Label> Commencer / Arrêter l'enregistrement
+        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+          <div style={{fontStyle: 'italic', textAlign: 'left'}}>
+            <div style={{fontWeight: 'bold'}}>Raccourcis clavier :&nbsp;</div>
+            <Label size="tiny"><Icon fitted name="arrow left"/></Label> Précédent,{' '}
+            <Label size="tiny"><Icon fitted name="arrow right"/></Label> Suivant,{' '}
+            <Label size="tiny">Espace</Label> Commencer / Arrêter l'enregistrement
           </div>
           <Button
-            id='modal-cancel-button'
-            onClick={ onClose }
-            disabled={ isRecording || isConverting || isPlaying }
+            id="modal-cancel-button"
+            onClick={onClose}
+            disabled={isRecording || isConverting || isPlaying}
           >Fermer</Button>
         </div>
       </Modal.Actions>

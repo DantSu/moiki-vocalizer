@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import { Button, Label, Select, Icon, Loader, TextArea, Input, Divider } from 'semantic-ui-react'
 import { Range } from 'react-range'
+
 const uuid = require('uuid')
 
 export const VoiceEditor = (props) => {
@@ -15,6 +16,7 @@ export const VoiceEditor = (props) => {
   const [listApiVoices, setListApiVoices] = useState(null)
   const [label, setLabel] = useState('')
   const [testSentence, setTestSentence] = useState('Je suis une voix de synthèse')
+  const isNeuralVoice = settings && settings.voice && settings.voice.substring(settings.voice.length - 6) === 'Neural'
 
   useEffect(() => {
     let cancelled = false
@@ -27,12 +29,39 @@ export const VoiceEditor = (props) => {
         clearInterval(interval)
         const availableVoices = voices.map((x, idx) => ({
           key: 'voice-' + idx,
+          type: 'synthesis',
           voice: x.name,
           value: x.name,
           lang: x.lang,
           text: x.name + ' (' + x.lang + ')'
         }))
-        setListApiVoices(availableVoices)
+        setListApiVoices([
+          {
+            key: 'voice-' + availableVoices.length,
+            type: 'neural',
+            voice: 'DeniseNeural',
+            value: 'DeniseNeural',
+            lang: 'fr-FR',
+            text: 'Denise (fr-FR)'
+          },
+          {
+            key: 'voice-' + (availableVoices.length + 1),
+            type: 'neural',
+            voice: 'HenriNeural',
+            value: 'HenriNeural',
+            lang: 'fr-FR',
+            text: 'Henri (fr-FR)'
+          },
+          {
+            key: 'voice-' + (availableVoices.length + 2),
+            type: 'neural',
+            voice: 'EloiseNeural',
+            value: 'EloiseNeural',
+            lang: 'fr-FR',
+            text: 'Eloise (fr-FR)'
+          },
+          ...availableVoices
+        ])
       }
     }, 50)
     return () => {
@@ -102,25 +131,32 @@ export const VoiceEditor = (props) => {
     onEnd()
   }
 
+  console.log(settings)
+
   return settings ? (
     <Fragment>
-      <div style={{ display: 'flex', flexDirection: 'column', margin: '.6em 0' }}>
-        <span style={{ marginBottom: 5 }}>Nom</span>
-        <Input fluid value={label} onChange={e => setLabel(e.target.value)} style={{ flexGrow: 1, width: 'auto' }} />
+      <div style={{display: 'flex', flexDirection: 'column', margin: '.6em 0'}}>
+        <span style={{marginBottom: 5}}>Nom</span>
+        <Input fluid value={label} onChange={e => setLabel(e.target.value)} style={{flexGrow: 1, width: 'auto'}}/>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', margin: '.6em 0' }}>
-        <span style={{ marginBottom: 5 }}>Voix</span>
-        <Select fluid value={settings.voice} onChange={(_, opt) => changeVoice(opt.value)} options={listApiVoices} style={{ flexGrow: 1, width: 'auto' }} />
+      <div style={{display: 'flex', flexDirection: 'column', margin: '.6em 0'}}>
+        <span style={{marginBottom: 5}}>Voix</span>
+        <Select fluid value={settings.voice} onChange={(_, opt) => changeVoice(opt.value)} options={listApiVoices}
+                style={{flexGrow: 1, width: 'auto'}}/>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', margin: '1em 0' }}>
-        <div style={{ marginBottom: 8 }}>Pitch (tonalité) <Label size="mini" color="teal">{settings.pitch}</Label></div>
+      <div style={{
+        display: isNeuralVoice ? 'none' : 'flex',
+        flexDirection: 'column',
+        margin: '1em 0'
+      }}>
+        <div style={{marginBottom: 8}}>Pitch (tonalité) <Label size="mini" color="teal">{settings.pitch}</Label></div>
         <Range
           step={0.01}
           min={0}
           max={2}
           values={[settings.pitch]}
           onChange={values => updateSettings({pitch: values[0]})}
-          renderTrack={({ props, children }) => (
+          renderTrack={({props, children}) => (
             <div
               {...props}
               style={{
@@ -134,7 +170,7 @@ export const VoiceEditor = (props) => {
               {children}
             </div>
           )}
-          renderThumb={({ props }) => (
+          renderThumb={({props}) => (
             <div
               {...props}
               style={{
@@ -149,15 +185,15 @@ export const VoiceEditor = (props) => {
           )}
         />
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', margin: '1em 0' }}>
-        <span style={{ marginBottom: 8 }}>Rate (fréquence) <Label size="mini" color="teal">{settings.rate}</Label></span>
+      <div style={{display: isNeuralVoice ? 'none' : 'flex', flexDirection: 'column', margin: '1em 0'}}>
+        <span style={{marginBottom: 8}}>Rate (fréquence) <Label size="mini" color="teal">{settings.rate}</Label></span>
         <Range
           step={0.01}
           min={.5}
           max={3.5}
           values={[settings.rate]}
           onChange={values => updateSettings({rate: values[0]})}
-          renderTrack={({ props, children }) => (
+          renderTrack={({props, children}) => (
             <div
               {...props}
               style={{
@@ -171,7 +207,7 @@ export const VoiceEditor = (props) => {
               {children}
             </div>
           )}
-          renderThumb={({ props }) => (
+          renderThumb={({props}) => (
             <div
               {...props}
               style={{
@@ -191,23 +227,23 @@ export const VoiceEditor = (props) => {
         value={testSentence}
         onChange={e => setTestSentence(e.target.value)}
       />
-      <div style={{ display: 'flex', margin: '.6em 0', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{display: 'flex', margin: '.6em 0', justifyContent: 'center', alignItems: 'center'}}>
         <Button circular onClick={reset}>
-          <Icon name='repeat' /> Voix par défaut
+          <Icon name="repeat"/> Voix par défaut
         </Button>
         <Button primary circular onClick={() => testVoice(settings, testSentence)}>
-          <Icon name='play' /> Tester la voix
+          <Icon name="play"/> Tester la voix
         </Button>
       </div>
-      <Divider />
-      <div style={{ display: 'flex', margin: '.6em 0', justifyContent: 'center', alignItems: 'center' }}>
+      <Divider/>
+      <div style={{display: 'flex', margin: '.6em 0', justifyContent: 'center', alignItems: 'center'}}>
         <Button size="big" primary circular onClick={saveVoice}>
-          <Icon name='save' /> { currentVoice && currentVoice.id ? 'Enregistrer cette voix' : 'Ajouter cette voix' }
+          <Icon name="save"/> {currentVoice && currentVoice.id ? 'Enregistrer cette voix' : 'Ajouter cette voix'}
         </Button>
       </div>
-      
+
     </Fragment>
   ) : (
-    <Loader active={true} />
+    <Loader active={true}/>
   )
 }
